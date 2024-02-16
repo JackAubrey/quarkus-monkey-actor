@@ -6,29 +6,29 @@ import com.quarkus.developers.enumerations.FooTypeEnum;
 import com.quarkus.developers.mappers.FooMapper;
 import com.quarkus.developers.repositories.FooRepository;
 import io.quarkus.scheduler.Scheduled;
+import io.quarkus.scheduler.ScheduledExecution;
 import io.smallrye.common.annotation.Blocking;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @ApplicationScoped
-public class ActorJobsService {
+public class ActorDatabaseJobsService {
     private final FooRepository fooRepository;
     private final FooMapper fooMapper;
 
     private final Faker faker = new Faker();
-    private AtomicInteger atomicInteger = new AtomicInteger();
+    private AtomicInteger fooType = new AtomicInteger();
 
-    public ActorJobsService(FooRepository fooRepository, FooMapper fooMapper) {
+    public ActorDatabaseJobsService(FooRepository fooRepository, FooMapper fooMapper) {
         this.fooRepository = fooRepository;
         this.fooMapper = fooMapper;
     }
 
-    @Scheduled(every = "5s")
+    //@Scheduled(every = "5s")
     void performSearch() {
         long found = fooRepository.findAll().page(0, 10).count();
         log.info("Found {} entries", found);
@@ -36,7 +36,7 @@ public class ActorJobsService {
 
     @Transactional
     @Blocking
-    @Scheduled(every = "2s")
+    @Scheduled(every = "2s", skipExecutionIf = InsertPredicate.class)
     void performInsert() {
         FooEntity fooEntity = FooEntity.builder()
                 .title(faker.book().title())
@@ -48,10 +48,10 @@ public class ActorJobsService {
     }
 
     private FooTypeEnum nextType() {
-        if(atomicInteger.get() >= FooTypeEnum.values().length) {
-            atomicInteger = new AtomicInteger();
+        if(fooType.get() >= FooTypeEnum.values().length) {
+            fooType = new AtomicInteger();
         }
 
-        return FooTypeEnum.values()[atomicInteger.getAndIncrement()];
+        return FooTypeEnum.values()[fooType.getAndIncrement()];
     }
 }
