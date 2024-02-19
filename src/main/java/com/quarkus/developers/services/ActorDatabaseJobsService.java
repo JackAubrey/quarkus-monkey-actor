@@ -6,7 +6,6 @@ import com.quarkus.developers.enumerations.FooTypeEnum;
 import com.quarkus.developers.mappers.FooMapper;
 import com.quarkus.developers.repositories.FooRepository;
 import io.quarkus.scheduler.Scheduled;
-import io.quarkus.scheduler.ScheduledExecution;
 import io.smallrye.common.annotation.Blocking;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -28,7 +27,7 @@ public class ActorDatabaseJobsService {
         this.fooMapper = fooMapper;
     }
 
-    //@Scheduled(every = "5s")
+    @Scheduled(every = "5s")
     void performSearch() {
         long found = fooRepository.findAll().page(0, 10).count();
         log.info("Found {} entries", found);
